@@ -253,6 +253,22 @@ const Generate = () => {
             setSecret(e.target.value);
           }}
         />
+        {secret.length > 72 && (
+          <div className="p-3 mt-1">
+            <span className="text-red-600">WARNING:</span> bcrypt has a maximum
+            password length of 72 characters. so, while this utility will accept
+            passwords longer than that, bcrypt will only check the first 72
+            characters. (read more on the{" "}
+            <Link
+              target="_blank"
+              className="underline"
+              href="https://en.wikipedia.org/wiki/Bcrypt#Maximum_password_length"
+            >
+              wiki
+            </Link>
+            .)
+          </div>
+        )}
         <Input
           type="number"
           label="cost"
@@ -368,16 +384,21 @@ function App() {
           </div>
         </main>
       </div>
-      <footer className="dark:text-gray-600 text-sm text-center p-4">
+      <footer className="dark:text-gray-600 text-gray-500 text-sm text-center p-4">
         <div className="mb-1">
           made out of boredrom by{" "}
-          <Link className="dark:text-gray-500" href="https://nick.comer.io">
+          <Link
+            target="_blank"
+            className="dark:text-gray-500 text-gray-400 underline"
+            href="https://nick.comer.io"
+          >
             nick
           </Link>
         </div>
         <div>
           <Link
-            className="dark:text-gray-500"
+            target="_blank"
+            className="dark:text-gray-500 text-gray-400 underline"
             href="https://github.com/nkcmr/bcrypt.ninja"
           >
             github
