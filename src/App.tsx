@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./App.css";
+import emoji from "./emoji.svg";
 import { bcryptHash, bcryptVerify } from "./worker";
 
 const Link = (props: any) => (
@@ -12,16 +13,7 @@ const Hr = () => (
   <hr className="border-solid border-1 border-gray-500 dark:border-gray-300 my-2" />
 );
 
-const omit = (obj: any, keys: string[]): any => {
-  const newObj: any = {};
-  for (const [key, value] of Object.entries(newObj)) {
-    if (keys.includes(key)) {
-      continue;
-    }
-    newObj[key] = value;
-  }
-  return newObj;
-};
+function noop(...discard: any): void {}
 
 const Button = (
   props: React.ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -30,7 +22,11 @@ const Button = (
   }
 ) => (
   <button
-    {...omit(props, ["busy", "active"])}
+    {...(() => {
+      const { busy, active, ...other } = props;
+      noop(busy, active);
+      return other;
+    })()}
     className={[
       props.className,
       (!props.className || !props.className.includes("rounded")) &&
@@ -321,47 +317,73 @@ function App() {
   const [mode, setMode] = useState("generate");
 
   return (
-    <div className="sm:w-12/12 md:w-5/12 lg:6/12 rounded-lg text-white dark:text-gray-800 bg-gray-800 dark:bg-gray-200 mx-auto my-4 p-4">
-      <header className="w-max text-xl mb-3">bcrypt.ninja</header>
-      <main>
-        <div className="dark:text-gray-500 text-gray-400">
-          a <span style={{ position: "relative", top: "2px" }}>&#x1F4AF;</span>{" "}
-          percent in-browser&nbsp;
-          <Link
-            target="_blank"
-            className="underline"
-            href="https://en.wikipedia.org/wiki/Bcrypt"
-          >
-            bcrypt
-          </Link>
-          &nbsp;utility.
+    <div className="sm:w-12/12 md:w-5/12 lg:6/12 mx-auto my-4">
+      <div className="rounded-lg text-white dark:text-gray-800 bg-gray-800 dark:bg-gray-200 p-4">
+        <div className="flex items-center justify-between mb-2">
+          <header className="w-max text-xl">bcrypt.ninja</header>
+          <img
+            src={emoji}
+            alt="lock and key emoji"
+            style={{ height: "40px" }}
+          />
         </div>
-        <Hr />
-        <div>
-          <div className="flex justify-center">
-            <Button
-              className="rounded-l-md"
-              active={mode === "generate"}
-              onClick={() => {
-                setMode("generate");
-              }}
+        <main>
+          <div className="dark:text-gray-500 text-gray-400">
+            a{" "}
+            <span style={{ position: "relative", top: "2px" }}>&#x1F4AF;</span>{" "}
+            percent in-browser&nbsp;
+            <Link
+              target="_blank"
+              className="underline"
+              href="https://en.wikipedia.org/wiki/Bcrypt"
             >
-              generate
-            </Button>
-            <Button
-              className="rounded-r-md"
-              active={mode === "verify"}
-              onClick={() => {
-                setMode("verify");
-              }}
-            >
-              verify
-            </Button>
+              bcrypt
+            </Link>
+            &nbsp;utility.
           </div>
-          {mode === "generate" && <Generate />}
-          {mode === "verify" && <Verify />}
+          <Hr />
+          <div>
+            <div className="flex justify-center">
+              <Button
+                className="rounded-l-md"
+                active={mode === "generate"}
+                onClick={() => {
+                  setMode("generate");
+                }}
+              >
+                generate
+              </Button>
+              <Button
+                className="rounded-r-md"
+                active={mode === "verify"}
+                onClick={() => {
+                  setMode("verify");
+                }}
+              >
+                verify
+              </Button>
+            </div>
+            {mode === "generate" && <Generate />}
+            {mode === "verify" && <Verify />}
+          </div>
+        </main>
+      </div>
+      <footer className="dark:text-gray-600 text-sm text-center p-4">
+        <div className="mb-1">
+          made out of boredrom by{" "}
+          <Link className="dark:text-gray-500" href="https://nick.comer.io">
+            nick
+          </Link>
         </div>
-      </main>
+        <div>
+          <Link
+            className="dark:text-gray-500"
+            href="https://github.com/nkcmr/bcrypt.ninja"
+          >
+            github
+          </Link>
+        </div>
+      </footer>
     </div>
   );
 }
