@@ -87,6 +87,12 @@ const Input = (props: InputProps): React.JSX.Element => {
         )}
       >
         <input
+          // secrets must not be altered by the keyboard or sent off to a
+          // cloud spellchecker
+          spellCheck={false}
+          autoComplete="off"
+          autoCapitalize="off"
+          autoCorrect="off"
           {...props}
           style={{ width: "100%" }}
           className="w-max text-sm bg-transparent focus:outline-hidden focus:border-none text-black"
