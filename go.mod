@@ -1,5 +1,5 @@
 module github.com/nkcmr/bcrypt.ninja
 
-go 1.16
+go 1.26.0
 
-require golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
+require golang.org/x/crypto v0.58.0

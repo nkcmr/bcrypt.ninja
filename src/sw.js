@@ -30,7 +30,7 @@ WebAssembly.instantiateStreaming(fetch("/bcrypt.wasm"), go.importObject).then(
     go.run(result.instance);
     const cancelWait = setInterval(() => {
       console.log("exports from go appear to be set, all ready!");
-      if (global.bcrypt_hash) {
+      if (globalThis.bcrypt_hash) {
         clearInterval(cancelWait);
         wasmResolve();
       }

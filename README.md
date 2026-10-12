@@ -3,7 +3,7 @@
 a 100% in-browser bcrypt utility. made with:
 
 - [TypeScript](https://www.typescriptlang.org/)
-- [React](https://reactjs.org/) + [Create React App](https://create-react-app.dev/)
+- [React](https://reactjs.org/) + [Vite](https://vite.dev/)
 - [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Worker)
 - [TailwindCSS](https://tailwindcss.com/)
 - [Go](https://golang.org/) (compiled to WASM)

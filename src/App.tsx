@@ -10,7 +10,7 @@ const Link = (props: any) => (
 );
 
 const Hr = () => (
-  <hr className="border-solid border-1 border-gray-500 dark:border-gray-300 my-2" />
+  <hr className="border-solid border-gray-500 dark:border-gray-300 my-2" />
 );
 
 function noop(...discard: any): void {}
@@ -33,7 +33,7 @@ const Button = (
         "rounded-md",
       props.active ? "underline" : "",
       "p-2 text-center",
-      "focus:outline-none",
+      "focus:outline-hidden",
       "dark:text-gray-50",
       "text-gray-600",
       !props.busy && props.disabled ? "cursor-not-allowed" : "",
@@ -70,7 +70,7 @@ const ModeHeader = ({ heading, subheading }: IModeHeaderProps) => {
   );
 };
 
-const Input = (props: InputProps): JSX.Element => {
+const Input = (props: InputProps): React.JSX.Element => {
   const [focus, setFocus] = useState(false);
   return (
     <>
@@ -89,7 +89,7 @@ const Input = (props: InputProps): JSX.Element => {
         <input
           {...props}
           style={{ width: "100%" }}
-          className="w-max text-sm bg-transparent focus:outline-none focus:border-none text-black"
+          className="w-max text-sm bg-transparent focus:outline-hidden focus:border-none text-black"
           onFocus={() => {
             setFocus(true);
           }}
