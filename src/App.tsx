@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import "./App.css";
 import emoji from "./emoji.svg";
 import { bcryptHash, bcryptVerify } from "./worker";
@@ -247,23 +247,33 @@ const Generate = () => {
   const [busy, setBusy] = useState(false);
   const secretBytes = utf8Length(secret);
   const secretTooLong = secretBytes > MAX_SECRET_BYTES;
+  // bumped whenever the inputs change, so a hash that finishes after the
+  // secret or cost was edited is discarded instead of shown as current
+  const inputsVersion = useRef(0);
+
+  const inputsChanged = () => {
+    inputsVersion.current++;
+    setHash("");
+    setError(null);
+  };
 
   const updateHash = () => {
     if (busy || secret.length === 0 || secretTooLong) {
       return;
     }
+    const version = inputsVersion.current;
     setBusy(true);
     setError(null);
     timing("bcrypt_hash", bcryptHash(cost, secret))
       .then((hash) => {
-        if (secret.length > 0) {
+        if (version === inputsVersion.current) {
           setHash(hash);
-        } else {
-          setHash("");
         }
       })
       .catch((e) => {
-        setError(errorMessage(e));
+        if (version === inputsVersion.current) {
+          setError(errorMessage(e));
+        }
       })
       .finally(() => {
         setBusy(false);
@@ -289,7 +299,7 @@ const Generate = () => {
           }}
           onChange={(e) => {
             setSecret(e.target.value);
-            setError(null);
+            inputsChanged();
           }}
         />
         {secretTooLong && (
@@ -315,11 +325,16 @@ const Generate = () => {
           id="cost"
           value={String(cost)}
           onChange={(e) => {
-            const cost = parseInt(e.target.value, 10);
-            if (cost <= 31 && cost >= 4) {
-              setCost(cost);
+            const parsed = parseInt(e.target.value, 10);
+            let next = cost;
+            if (parsed <= 31 && parsed >= 4) {
+              next = parsed;
             } else if (e.target.value === "") {
-              setCost(DEFAULT_COST);
+              next = DEFAULT_COST;
+            }
+            if (next !== cost) {
+              setCost(next);
+              inputsChanged();
             }
           }}
         />
