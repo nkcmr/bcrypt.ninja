@@ -70,12 +70,17 @@ const ModeHeader = ({ heading, subheading }: IModeHeaderProps) => {
   );
 };
 
-const Input = (props: InputProps): React.JSX.Element => {
+const Input = ({
+  label,
+  onFocus,
+  onBlur,
+  ...props
+}: InputProps): React.JSX.Element => {
   const [focus, setFocus] = useState(false);
   return (
     <>
       <div className="mb-1">
-        <label htmlFor={props.id}>{props.label}</label>
+        <label htmlFor={props.id}>{label}</label>
       </div>
       <div
         className={classList(
@@ -96,11 +101,13 @@ const Input = (props: InputProps): React.JSX.Element => {
           {...props}
           style={{ width: "100%" }}
           className="w-max text-sm bg-transparent focus:outline-hidden focus:border-none text-black"
-          onFocus={() => {
+          onFocus={(e) => {
             setFocus(true);
+            onFocus?.(e);
           }}
-          onBlur={() => {
+          onBlur={(e) => {
             setFocus(false);
+            onBlur?.(e);
           }}
           id={props.id}
         />
