@@ -20,16 +20,29 @@ const messageQueue = (() => {
   }
   const waitForMessage = (() => {
     let resolveResult: (value: string | PromiseLike<string>) => void = () => {};
-    let rejectResult: (reason?: any) => void;
+    let rejectResult: (reason?: any) => void = () => {};
+    // set when the worker itself fails (e.g. script failed to load); every
+    // pending and future request fails with it rather than waiting forever
+    let workerFailure: Error | null = null;
     worker.addEventListener("message", (e) => {
       if (e.data.error) {
-        rejectResult(e.data.error);
+        rejectResult(new Error(e.data.error));
       } else {
         resolveResult(e.data.result);
       }
     });
+    worker.addEventListener("error", (e) => {
+      workerFailure = new Error(
+        `bcrypt worker failed: ${e.message || "unknown error"}`,
+      );
+      rejectResult(workerFailure);
+    });
     return (): Promise<string> => {
       return new Promise((resolve, reject) => {
+        if (workerFailure) {
+          reject(workerFailure);
+          return;
+        }
         resolveResult = resolve;
         rejectResult = reject;
       });

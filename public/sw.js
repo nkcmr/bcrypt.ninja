@@ -592,15 +592,18 @@ if (!WebAssembly.instantiateStreaming) {
   };
 }
 
-let wasmResolve;
-let wasmReady = new Promise(function (resolve) {
+let wasmResolve, wasmReject;
+let wasmReady = new Promise(function (resolve, reject) {
   wasmResolve = resolve;
+  wasmReject = reject;
 });
+// failures are reported per-request; this just prevents an unhandled rejection
+wasmReady.catch(function () {});
 
 const go = new Go();
 console.log("loading wasm...");
-WebAssembly.instantiateStreaming(fetch("/bcrypt.wasm"), go.importObject).then(
-  function (result) {
+WebAssembly.instantiateStreaming(fetch("/bcrypt.wasm"), go.importObject)
+  .then(function (result) {
     console.log("wasm loaded! starting go runtime...");
     go.run(result.instance);
     const cancelWait = setInterval(() => {
@@ -610,8 +613,14 @@ WebAssembly.instantiateStreaming(fetch("/bcrypt.wasm"), go.importObject).then(
         wasmResolve();
       }
     }, 50);
-  }
-);
+  })
+  .catch(function (err) {
+    wasmReject(new Error(`failed to load bcrypt.wasm: ${errorMessage(err)}`));
+  });
+
+function errorMessage(err) {
+  return err instanceof Error ? err.message : String(err);
+}
 
 self.addEventListener("message", function (event) {
   console.log(
@@ -627,7 +636,7 @@ self.addEventListener("message", function (event) {
           self.postMessage({ result: hash });
         })
         .catch((err) => {
-          self.postMessage({ error: new Error(`${err}`) });
+          self.postMessage({ error: errorMessage(err) });
         });
       break;
     case "bcrypt_verify":
@@ -639,7 +648,7 @@ self.addEventListener("message", function (event) {
           self.postMessage({ result: ok });
         })
         .catch((err) => {
-          self.postMessage({ error: new Error(`${err}`) });
+          self.postMessage({ error: errorMessage(err) });
         });
       break;
     default:

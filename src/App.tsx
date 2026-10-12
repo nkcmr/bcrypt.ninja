@@ -124,24 +124,41 @@ const classList = (
 
 async function timing<T>(label: string, p: Promise<T>): Promise<T> {
   console.time(label);
-  const result = await p;
-  console.timeEnd(label);
-  return result;
+  try {
+    return await p;
+  } finally {
+    console.timeEnd(label);
+  }
 }
+
+const errorMessage = (e: unknown): string =>
+  e instanceof Error ? e.message : String(e);
+
+const ErrorBox = ({ message }: { message: string }) => (
+  <div className="p-3 mt-1">
+    <span className="text-red-600">ERROR:</span> {message}
+  </div>
+);
 
 const Verify = () => {
   const [secret, setSecret] = useState<string>("");
   const [hash, setHash] = useState<string>("");
   const [result, setResult] = useState<boolean | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<boolean>(false);
   const doVerification = () => {
     if (hash.length === 0 || secret.length === 0) {
       return;
     }
     setBusy(true);
+    setResult(null);
+    setError(null);
     timing("bcrypt_verify", bcryptVerify(hash, secret))
       .then((ok) => {
         setResult(ok);
+      })
+      .catch((e) => {
+        setError(errorMessage(e));
       })
       .finally(() => {
         setBusy(false);
@@ -181,6 +198,7 @@ const Verify = () => {
         onChange={(e) => {
           setSecret(e.target.value);
           setResult(null);
+          setError(null);
         }}
       />
       <Input
@@ -196,6 +214,7 @@ const Verify = () => {
         onChange={(e) => {
           setHash(e.target.value);
           setResult(null);
+          setError(null);
         }}
       />
       <Button
@@ -207,6 +226,7 @@ const Verify = () => {
       >
         verify
       </Button>
+      {error !== null && <ErrorBox message={error} />}
     </>
   );
 };
@@ -218,6 +238,7 @@ const Generate = () => {
   const [secret, setSecret] = useState("");
   const [hash, setHash] = useState("");
   const [cost, setCost] = useState(DEFAULT_COST);
+  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const updateHash = () => {
@@ -225,6 +246,7 @@ const Generate = () => {
       return;
     }
     setBusy(true);
+    setError(null);
     timing("bcrypt_hash", bcryptHash(cost, secret))
       .then((hash) => {
         if (secret.length > 0) {
@@ -232,6 +254,9 @@ const Generate = () => {
         } else {
           setHash("");
         }
+      })
+      .catch((e) => {
+        setError(errorMessage(e));
       })
       .finally(() => {
         setBusy(false);
@@ -257,6 +282,7 @@ const Generate = () => {
           }}
           onChange={(e) => {
             setSecret(e.target.value);
+            setError(null);
           }}
         />
         {secret.length > 72 && (
@@ -330,6 +356,7 @@ const Generate = () => {
         >
           generate
         </Button>
+        {error !== null && <ErrorBox message={error} />}
       </div>
     </>
   );
