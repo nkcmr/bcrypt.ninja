@@ -231,6 +231,11 @@ const Verify = () => {
   );
 };
 
+// bcrypt only operates on the first 72 bytes of a password, and the go
+// implementation refuses to generate hashes for anything longer
+const MAX_SECRET_BYTES = 72;
+const utf8Length = (s: string): number => new TextEncoder().encode(s).length;
+
 const Generate = () => {
   const DEFAULT_COST = 10;
   const WARNING_COST = 14;
@@ -240,9 +245,11 @@ const Generate = () => {
   const [cost, setCost] = useState(DEFAULT_COST);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const secretBytes = utf8Length(secret);
+  const secretTooLong = secretBytes > MAX_SECRET_BYTES;
 
   const updateHash = () => {
-    if (busy) {
+    if (busy || secret.length === 0 || secretTooLong) {
       return;
     }
     setBusy(true);
@@ -285,12 +292,13 @@ const Generate = () => {
             setError(null);
           }}
         />
-        {secret.length > 72 && (
+        {secretTooLong && (
           <div className="p-3 mt-1">
             <span className="text-red-600">WARNING:</span> bcrypt has a maximum
-            password length of 72 characters. so, while this utility will accept
-            passwords longer than that, bcrypt will only check the first 72
-            characters. (read more on the{" "}
+            password length of 72 bytes (this secret is {secretBytes}). anything
+            past that would be silently ignored, so this utility won't generate
+            a hash for it. note that non-ASCII characters (accents, emoji, etc.)
+            take up more than one byte each. (read more on the{" "}
             <Link
               target="_blank"
               className="underline"
@@ -350,7 +358,7 @@ const Generate = () => {
           onClick={() => {
             updateHash();
           }}
-          disabled={busy || secret.length === 0}
+          disabled={busy || secret.length === 0 || secretTooLong}
           busy={busy}
           className="w-full mt-4"
         >
